@@ -147,6 +147,10 @@ class ReportActionItem extends Component {
         );
     }
 
+    hidePopover() {
+        ReportActionContextMenu.hideContextMenu();
+    }
+
     toggleReaction(emoji) {
         Report.toggleEmojiReaction(this.props.report.reportID, this.props.action, emoji);
     }
@@ -246,6 +250,7 @@ class ReportActionItem extends Component {
                 onPressIn={() => this.props.isSmallScreenWidth && DeviceCapabilities.canUseTouchScreen() && ControlSelection.block()}
                 onPressOut={() => ControlSelection.unblock()}
                 onSecondaryInteraction={this.showPopover}
+                onSecondaryInteractionOut={this.hidePopover}
                 preventDefaultContentMenu={!this.props.draftMessage}
                 withoutFocusOnSecondaryInteraction
             >

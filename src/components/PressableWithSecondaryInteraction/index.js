@@ -18,11 +18,11 @@ class PressableWithSecondaryInteraction extends Component {
         if (this.props.forwardedRef && _.isFunction(this.props.forwardedRef)) {
             this.props.forwardedRef(this.pressableRef);
         }
-        this.pressableRef.addEventListener('contextmenu', this.executeSecondaryInteractionOnContextMenu);
+        window.addEventListener('contextmenu', this.executeSecondaryInteractionOnContextMenu);
     }
 
     componentWillUnmount() {
-        this.pressableRef.removeEventListener('contextmenu', this.executeSecondaryInteractionOnContextMenu);
+        window.removeEventListener('contextmenu', this.executeSecondaryInteractionOnContextMenu);
     }
 
     /**
@@ -30,22 +30,29 @@ class PressableWithSecondaryInteraction extends Component {
      * https://developer.mozilla.org/en-US/docs/Web/API/Element/contextmenu_event
      */
     executeSecondaryInteractionOnContextMenu(e) {
-        e.stopPropagation();
-        if (this.props.preventDefaultContentMenu) {
-            e.preventDefault();
-        }
+        const elements = document.elementsFromPoint(e.clientX, e.clientY);
+        const allowed = _.some(elements, element => this.pressableRef.contains(element));
 
-        /**
-         * This component prevents the tapped element from capturing focus.
-         * We need to blur this element when clicked as it opens modal that implements focus-trapping.
-         * When the modal is closed it focuses back to the last active element.
-         * Therefore it shifts the element to bring it back to focus.
-         * https://github.com/Expensify/App/issues/14148
-        */
-        if (this.props.withoutFocusOnSecondaryInteraction && this.pressableRef) {
-            this.pressableRef.blur();
+        if (allowed) {
+            e.stopPropagation();
+            if (this.props.preventDefaultContentMenu) {
+                e.preventDefault();
+            }
+
+            /**
+             * This component prevents the tapped element from capturing focus.
+             * We need to blur this element when clicked as it opens modal that implements focus-trapping.
+             * When the modal is closed it focuses back to the last active element.
+             * Therefore it shifts the element to bring it back to focus.
+             * https://github.com/Expensify/App/issues/14148
+             */
+            if (this.props.withoutFocusOnSecondaryInteraction && this.pressableRef) {
+                this.pressableRef.blur();
+            }
+            this.props.onSecondaryInteraction(e);
+        } else {
+            this.props.onSecondaryInteractionOut(e);
         }
-        this.props.onSecondaryInteraction(e);
     }
 
     render() {
