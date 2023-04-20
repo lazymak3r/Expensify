@@ -70,6 +70,7 @@ class FloatingActionButtonAndPopover extends React.Component {
 
         this.showCreateMenu = this.showCreateMenu.bind(this);
         this.hideCreateMenu = this.hideCreateMenu.bind(this);
+        this.handleContextMenuOpened = this.handleContextMenuOpened.bind(this);
 
         this.state = {
             isCreateMenuActive: false,
@@ -77,6 +78,9 @@ class FloatingActionButtonAndPopover extends React.Component {
     }
 
     componentDidMount() {
+        // Listen to the contextmenuopened menu open event to close the FAB context menu
+        window.addEventListener('contextmenuopened', this.handleContextMenuOpened);
+
         const routes = lodashGet(this.props.navigation.getState(), 'routes', []);
         Welcome.show({routes, showCreateMenu: this.showCreateMenu});
     }
@@ -87,6 +91,17 @@ class FloatingActionButtonAndPopover extends React.Component {
         }
 
         // Hide menu manually when other pages are opened using shortcut key
+        this.hideCreateMenu();
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener('contextmenuopened', this.handleContextMenuOpened);
+    }
+
+    /**
+     * Hide the FAB context menu if another context menu has been opened.
+     */
+    handleContextMenuOpened() {
         this.hideCreateMenu();
     }
 

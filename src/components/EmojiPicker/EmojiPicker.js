@@ -21,6 +21,7 @@ class EmojiPicker extends React.Component {
         this.measureEmojiPopoverAnchorPositionAndUpdateState = this.measureEmojiPopoverAnchorPositionAndUpdateState.bind(this);
         this.focusEmojiSearchInput = this.focusEmojiSearchInput.bind(this);
         this.measureContent = this.measureContent.bind(this);
+        this.handleContextMenuOpened = this.handleContextMenuOpened.bind(this);
         this.onModalHide = () => {};
         this.onEmojiSelected = () => {};
 
@@ -38,6 +39,9 @@ class EmojiPicker extends React.Component {
     }
 
     componentDidMount() {
+        // Listen to the contextmenuopened menu open event to close the FAB context menu
+        window.addEventListener('contextmenuopened', this.handleContextMenuOpened);
+
         this.emojiPopoverDimensionListener = Dimensions.addEventListener('change', this.measureEmojiPopoverAnchorPositionAndUpdateState);
     }
 
@@ -51,10 +55,18 @@ class EmojiPicker extends React.Component {
     }
 
     componentWillUnmount() {
+        window.removeEventListener('contextmenuopened', this.handleContextMenuOpened);
         if (!this.emojiPopoverDimensionListener) {
             return;
         }
         this.emojiPopoverDimensionListener.remove();
+    }
+
+    /**
+     * Hide the Emoji Picker context menu if another context menu has been opened.
+     */
+    handleContextMenuOpened() {
+        this.hideEmojiPicker(false);
     }
 
     /**
@@ -99,6 +111,9 @@ class EmojiPicker extends React.Component {
      * @param {Function} [onWillShow=() => {}] - Run a callback when Popover will show
      */
     showEmojiPicker(onModalHide, onEmojiSelected, emojiPopoverAnchor, anchorOrigin, onWillShow = () => {}) {
+        const event = new Event('contextmenuopened');
+        window.dispatchEvent(event);
+
         this.onModalHide = onModalHide;
         this.onEmojiSelected = onEmojiSelected;
         this.emojiPopoverAnchor = emojiPopoverAnchor;

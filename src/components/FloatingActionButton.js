@@ -3,6 +3,7 @@ import {
     Pressable, Animated, Easing, View,
 } from 'react-native';
 import PropTypes from 'prop-types';
+import _ from 'underscore';
 import Icon from './Icon';
 import * as Expensicons from './Icon/Expensicons';
 import styles from '../styles/styles';
@@ -30,7 +31,12 @@ const propTypes = {
 class FloatingActionButton extends PureComponent {
     constructor(props) {
         super(props);
+        this.openFabContextMenu = this.openFabContextMenu.bind(this);
         this.animatedValue = new Animated.Value(props.isActive ? 1 : 0);
+    }
+
+    componentDidMount() {
+        window.addEventListener('click', this.openFabContextMenu, true);
     }
 
     componentDidUpdate(prevProps) {
@@ -39,6 +45,26 @@ class FloatingActionButton extends PureComponent {
         }
 
         this.animateFloatingActionButton();
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener('click', this.openFabContextMenu);
+    }
+
+    /**
+     * Open FAB context menu
+     * @param {MouseEvent} e
+     */
+    openFabContextMenu(e) {
+        const elements = document.elementsFromPoint(e.clientX, e.clientY);
+        const allowed = _.some(elements, element => this.fabPressable.contains(element));
+        if (allowed) {
+            const event = new Event('contextmenuopened');
+            window.dispatchEvent(event);
+
+            this.fabPressable.blur();
+            this.props.onPress(e);
+        }
     }
 
     /**
@@ -79,11 +105,6 @@ class FloatingActionButton extends PureComponent {
                         ref={el => this.fabPressable = el}
                         accessibilityLabel={this.props.accessibilityLabel}
                         accessibilityRole={this.props.accessibilityRole}
-                        onPress={(e) => {
-                        // Drop focus to avoid blue focus ring.
-                            this.fabPressable.blur();
-                            this.props.onPress(e);
-                        }}
                         style={[
                             styles.floatingActionButton,
                             StyleUtils.getAnimatedFABStyle(rotate, backgroundColor),

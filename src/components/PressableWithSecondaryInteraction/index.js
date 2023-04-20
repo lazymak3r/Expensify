@@ -12,6 +12,7 @@ class PressableWithSecondaryInteraction extends Component {
     constructor(props) {
         super(props);
         this.executeSecondaryInteractionOnContextMenu = this.executeSecondaryInteractionOnContextMenu.bind(this);
+        this.handleContextMenuOpened = this.handleContextMenuOpened.bind(this);
     }
 
     componentDidMount() {
@@ -19,10 +20,20 @@ class PressableWithSecondaryInteraction extends Component {
             this.props.forwardedRef(this.pressableRef);
         }
         window.addEventListener('contextmenu', this.executeSecondaryInteractionOnContextMenu);
+        window.addEventListener('contextmenuopened', this.handleContextMenuOpened);
     }
 
     componentWillUnmount() {
         window.removeEventListener('contextmenu', this.executeSecondaryInteractionOnContextMenu);
+        window.removeEventListener('contextmenuopened', this.handleContextMenuOpened);
+    }
+
+    /**
+     * Hide context menu if another context menu has been opened.
+     * @param {Event} e - A custom contextmenuopened event.
+     * */
+    handleContextMenuOpened(e) {
+        this.props.onSecondaryInteractionOut(e);
     }
 
     /**
@@ -30,6 +41,9 @@ class PressableWithSecondaryInteraction extends Component {
      * https://developer.mozilla.org/en-US/docs/Web/API/Element/contextmenu_event
      */
     executeSecondaryInteractionOnContextMenu(e) {
+        const event = new Event('contextmenuopened');
+        window.dispatchEvent(event);
+
         const elements = document.elementsFromPoint(e.clientX, e.clientY);
         const allowed = _.some(elements, element => this.pressableRef.contains(element));
 
