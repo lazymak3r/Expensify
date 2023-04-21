@@ -31,7 +31,7 @@ const EmojiPickerButton = (props) => {
 
     const executeClick = useCallback((e) => {
         const elements = document.elementsFromPoint(e.clientX, e.clientY);
-        const allowed = _.some(elements, element => emojiPopoverAnchor.current.contains(element));
+        const allowed = _.some(elements, element => emojiPopoverAnchor.current && emojiPopoverAnchor.current.contains(element));
         if (allowed) {
             const event = new Event('contextmenuopened');
             window.dispatchEvent(event);
